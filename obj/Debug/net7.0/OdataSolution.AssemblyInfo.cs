@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OdataSolution")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+021044a8542b279dce56fe3cd4b9d8ed22770306")]
 [assembly: System.Reflection.AssemblyProductAttribute("OdataSolution")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OdataSolution")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

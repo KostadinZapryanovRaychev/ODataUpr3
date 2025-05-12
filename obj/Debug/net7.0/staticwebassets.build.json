@@ -1,11 +1,12 @@
 {
   "Version": 1,
-  "Hash": "DZv6MRznWhiDQWRRr+/sDjheD5RT2M4SoVnVcTKBqRk=",
+  "Hash": "ggzPwVSr3v7EcHdrPeOQmmM1tyASKGWoY6RsXRKQlq8=",
   "Source": "OdataSolution",
   "BasePath": "_content/OdataSolution",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [],
-  "Assets": []
+  "Assets": [],
+  "Endpoints": []
 }
