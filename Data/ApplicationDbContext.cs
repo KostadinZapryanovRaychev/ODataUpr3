@@ -4,10 +4,12 @@ using OdataSolution.Models;
 
 namespace OdataSolution.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options) { }
+            : base(options) 
+        { 
+        }
 
         public DbSet<Student> Students { get; set; }
     }

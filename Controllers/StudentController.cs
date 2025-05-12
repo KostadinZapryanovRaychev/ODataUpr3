@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
 using OdataSolution.Models;
 using OdataSolution.Services;
+
 
 [ApiController]
 [Route("api/[controller]")]
@@ -31,6 +33,7 @@ public class StudentController : ControllerBase
 
     [HttpGet("{id}")]
     [EnableQuery]
+    [Authorize]
     public async Task<ActionResult<Student>> GetStudentById(int id)
     {
         var student = await _studentService.GetStudentByIdAsync(id);
@@ -43,6 +46,7 @@ public class StudentController : ControllerBase
 
     [HttpPost]
     [EnableQuery]
+    [Authorize]
     public async Task<ActionResult<Student>> CreateStudent(Student student)
     {
         var created = await _studentService.CreateStudentAsync(student);
@@ -53,6 +57,7 @@ public class StudentController : ControllerBase
 
     [HttpPut("{id}")]
     [EnableQuery]
+    [Authorize]
     public async Task<IActionResult> UpdateStudent(int id, [FromBody] Student student)
     {
         var currentStudent = await _studentService.GetStudentByIdAsync(id);
@@ -85,7 +90,8 @@ public class StudentController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [EnableQuery] 
+    [EnableQuery]
+    [Authorize]
     public async Task<IActionResult> DeleteStudent(int id)
     {
         var student = await _studentService.GetStudentByIdAsync(id);

@@ -1,55 +1,101 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OData.ModelBuilder;
 using OdataSolution.Data;
 using OdataSolution.Models;
-using OdataSolution.Services;
+using System.Text;
 
-internal class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Add the JwtBearer authentication
+builder.Services.AddAuthentication(options =>
 {
-    private static void Main(string[] args)
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        var builder = WebApplication.CreateBuilder(args);
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+    };
+});
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Add Identity services
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
-        builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-         .AddEntityFrameworkStores<ApplicationDbContext>()
-         .AddDefaultTokenProviders();
+// OData setup
+var odataBuilder = new ODataConventionModelBuilder();
+odataBuilder.EntitySet<Student>("Student");
 
-        var odataBuilder = new ODataConventionModelBuilder();
-        odataBuilder.EntitySet<Student>("Student");
+builder.Services.AddControllers()
+    .AddOData(opt => opt
+        .AddRouteComponents("odata", odataBuilder.GetEdmModel())
+        .Select()
+        .Filter()
+        .OrderBy()
+        .Expand()
+        .SetMaxTop(100));
 
-        builder.Services.AddControllers()
-            .AddOData(opt => opt
-                .AddRouteComponents("odata", odataBuilder.GetEdmModel())
-                .Select()
-                .Filter()
-                .OrderBy()
-                .Expand()
-                .SetMaxTop(100));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    // Add JWT authorization support to Swagger UI
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Please enter a valid JWT token",
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
 
-        builder.Services.AddTransient<IStudentService, StudentService>();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
         {
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
         }
+    });
+});
 
-        app.UseHttpsRedirection();
+// Your other services here (e.g., IStudentService)
 
-        app.UseAuthentication(); // <== Identity
-        app.UseAuthorization();
+var app = builder.Build();
 
-        app.MapControllers();
-
-        app.Run();
-    }
+// Enable Swagger UI and Swagger
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+
+app.UseAuthentication(); // Enable Authentication
+app.UseAuthorization();  // Enable Authorization
+
+app.MapControllers();
+
+app.Run();
